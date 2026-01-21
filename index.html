@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caesar Cipher - Encoder/Decoder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .mode-selector {
+            display: flex;
+            background: #f5f5f5;
+            padding: 10px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            color: #666;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .controls-top {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .key-control {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .key-control label {
+            font-weight: 600;
+            color: #333;
+            min-width: 50px;
+        }
+
+        .slider-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            border-radius: 5px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.6);
+        }
+
+        .key-value {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+            min-width: 40px;
+            text-align: center;
+            background: white;
+            padding: 5px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .decrypt-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .language-select {
+            padding: 10px 15px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            color: #333;
+            font-size: 0.95em;
+            font-weight: 600;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .language-select:hover {
+            background: #f0f0f0;
+        }
+
+        .solve-btn {
+            padding: 10px 20px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(76, 175, 80, 0.3);
+        }
+
+        .solve-btn:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.4);
+        }
+
+        .solve-btn:active {
+            transform: translateY(0);
+        }
+
+        .info-box {
+            background: #e8eaf6;
+            padding: 12px 15px;
+            border-radius: 10px;
+            font-size: 0.9em;
+            color: #5e35b1;
+        }
+
+        .info-box strong {
+            color: #4527a0;
+        }
+
+        .main-content {
+            display: flex;
+            height: 300px;
+        }
+
+        .text-area-container {
+            flex: 1;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .text-area-container:first-child {
+            border-right: 2px solid #f0f0f0;
+        }
+
+        .text-area-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .text-area-container label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-1px);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        .copy-btn.copied {
+            background: #4caf50;
+        }
+
+        textarea {
+            flex: 1;
+            border: none;
+            resize: none;
+            font-size: 1.1em;
+            font-family: inherit;
+            outline: none;
+            padding: 10px;
+        }
+
+        textarea::placeholder {
+            color: #ccc;
+        }
+
+        .controls-bottom {
+            padding: 20px 30px;
+            background: #f8f9fa;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .scores-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .scores-header {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .score-item {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .score-item:hover {
+            background: #e8eaf6;
+            transform: translateY(-2px);
+        }
+
+        .score-item.best {
+            background: #c8e6c9;
+            border: 2px solid #4caf50;
+        }
+
+        .score-item.selected {
+            background: #e8eaf6;
+            border: 2px solid #667eea;
+        }
+
+        .score-key {
+            font-weight: 600;
+            color: #333;
+            font-size: 1em;
+        }
+
+        .score-value {
+            font-size: 0.85em;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .score-item.best .score-key {
+            color: #2e7d32;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+                height: auto;
+                min-height: 400px;
+            }
+
+            .text-area-container:first-child {
+                border-right: none;
+                border-bottom: 2px solid #f0f0f0;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .key-control {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .decrypt-controls {
+                flex-direction: column;
+            }
+
+            .scores-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔐 Caesar Cipher</h1>
+        <p>Decrypt and encrypt messages automatically</p>
+    </div>
+
+    <div class="container">
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="decrypt">Decrypt</button>
+            <button class="mode-btn" data-mode="encrypt">Encrypt</button>
+        </div>
+
+        <div class="controls-top">
+            <div class="key-control">
+                <label for="key-slider">Key:</label>
+                <div class="slider-container">
+                    <input type="range" id="key-slider" min="0" max="25" value="0">
+                    <span class="key-value" id="key-value">0</span>
+                </div>
+            </div>
+            
+            <div class="decrypt-controls" id="decrypt-controls">
+                <select class="language-select" id="language-select">
+                    <option value="en">English</option>
+                    <option value="it">Italian</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <option value="de">German</option>
+                    <option value="pt">Portuguese</option>
+                </select>
+                <button class="solve-btn" id="solve-btn">
+                    <span>🔍</span> Auto-solve
+                </button>
+            </div>
+
+            <div class="info-box" id="info-box">
+                <strong>Decrypt Mode:</strong> Manually adjust the key or click "Auto-solve" to find the best key automatically.
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="text-area-container">
+                <div class="text-area-header">
+                    <label id="input-label">Encrypted text</label>
+                    <button class="copy-btn" id="copy-input">
+                        <span>📋</span> Copy
+                    </button>
+                </div>
+                <textarea id="input-text" placeholder="Enter text here..."></textarea>
+            </div>
+
+            <div class="text-area-container">
+                <div class="text-area-header">
+                    <label id="output-label">Decrypted text</label>
+                    <button class="copy-btn" id="copy-output">
+                        <span>📋</span> Copy
+                    </button>
+                </div>
+                <textarea id="output-text" placeholder="Result will appear here..." readonly></textarea>
+            </div>
+        </div>
+
+        <div class="controls-bottom">
+            <div class="scores-container" id="scores-container" style="display: none;">
+                <div class="scores-header">Cross-Entropy Scores (lower is better)</div>
+                <div class="scores-grid" id="scores-grid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+        
+        const languageFrequencies = {
+            en: [0.08167, 0.01492, 0.02782, 0.04253, 0.12702, 0.02228, 0.02015,
+                 0.06094, 0.06966, 0.00153, 0.00772, 0.04025, 0.02406,
+                 0.06749, 0.07507, 0.01929, 0.00095, 0.05987, 0.06327, 0.09056,
+                 0.02758, 0.00978, 0.02360, 0.00150, 0.01974, 0.00074],
+            it: [0.11745, 0.00927, 0.04501, 0.03736, 0.11792, 0.01153, 0.01644,
+                 0.00636, 0.11283, 0.00011, 0.00009, 0.06510, 0.02512,
+                 0.06883, 0.09832, 0.03056, 0.00505, 0.06367, 0.04981, 0.05623,
+                 0.03011, 0.02097, 0.00033, 0.00003, 0.00020, 0.00494],
+            es: [0.12525, 0.01426, 0.04681, 0.05860, 0.13681, 0.00692, 0.01007,
+                 0.00703, 0.06247, 0.00444, 0.00011, 0.04967, 0.03157,
+                 0.06712, 0.08683, 0.02510, 0.00877, 0.06871, 0.07977, 0.04632,
+                 0.03927, 0.01138, 0.00017, 0.00215, 0.01008, 0.00467],
+            fr: [0.07636, 0.00901, 0.03260, 0.03669, 0.14715, 0.01066, 0.00866,
+                 0.00737, 0.07529, 0.00613, 0.00074, 0.05456, 0.02968,
+                 0.07095, 0.05796, 0.02521, 0.01362, 0.06693, 0.07948, 0.07244,
+                 0.06311, 0.01838, 0.00049, 0.00427, 0.00128, 0.00326],
+            de: [0.06516, 0.01886, 0.02732, 0.05076, 0.16396, 0.01656, 0.03009,
+                 0.04577, 0.06550, 0.00268, 0.01417, 0.03437, 0.02534,
+                 0.09776, 0.02594, 0.00670, 0.00018, 0.07003, 0.07270, 0.06154,
+                 0.04166, 0.00846, 0.01921, 0.00034, 0.00039, 0.01134],
+            pt: [0.14634, 0.01043, 0.03882, 0.04992, 0.12570, 0.01023, 0.01303,
+                 0.00781, 0.06186, 0.00397, 0.00015, 0.02779, 0.04738,
+                 0.04446, 0.09735, 0.02523, 0.01204, 0.06530, 0.06805, 0.04336,
+                 0.03639, 0.01575, 0.00037, 0.00253, 0.00006, 0.00470]
+        };
+
+        let currentMode = 'decrypt';
+        let currentKey = 0;
+        let currentLanguage = 'en';
+        let allScores = [];
+
+        const inputText = document.getElementById('input-text');
+        const outputText = document.getElementById('output-text');
+        const keySlider = document.getElementById('key-slider');
+        const keyValue = document.getElementById('key-value');
+        const modeButtons = document.querySelectorAll('.mode-btn');
+        const inputLabel = document.getElementById('input-label');
+        const outputLabel = document.getElementById('output-label');
+        const infoBox = document.getElementById('info-box');
+        const scoresContainer = document.getElementById('scores-container');
+        const scoresGrid = document.getElementById('scores-grid');
+        const copyInputBtn = document.getElementById('copy-input');
+        const copyOutputBtn = document.getElementById('copy-output');
+        const solveBtn = document.getElementById('solve-btn');
+        const languageSelect = document.getElementById('language-select');
+        const decryptControls = document.getElementById('decrypt-controls');
+
+        function encode(text, rotation) {
+            return text.split('').map(char => {
+                if (char.match(/[a-z]/)) {
+                    const pos = alphabet.indexOf(char);
+                    const newPos = (pos + rotation) % 26;
+                    return alphabet[newPos];
+                } else if (char.match(/[A-Z]/)) {
+                    const pos = alphabet.indexOf(char.toLowerCase());
+                    const newPos = (pos + rotation) % 26;
+                    return alphabet[newPos].toUpperCase();
+                }
+                return char;
+            }).join('');
+        }
+
+        function countOccurrences(text) {
+            const occ = new Array(26).fill(0);
+            text.split('').forEach(char => {
+                if (char.match(/[a-zA-Z]/)) {
+                    const pos = alphabet.indexOf(char.toLowerCase());
+                    occ[pos]++;
+                }
+            });
+            return occ;
+        }
+
+        function crossEntropy(p, q) {
+            return -p.reduce((sum, pi, i) => {
+                return sum + (q[i] > 0 ? pi * Math.log(q[i]) : 0);
+            }, 0);
+        }
+
+        function findBestKey(text, language) {
+            if (text.length < 5) return { bestKey: 0, scores: [] };
+
+            const frequencies = languageFrequencies[language];
+            const scores = [];
+            
+            for (let k = 0; k < 26; k++) {
+                const decoded = encode(text, k);
+                const occ = countOccurrences(decoded);
+                const totalOcc = occ.reduce((a, b) => a + b, 0);
+                
+                if (totalOcc === 0) {
+                    scores.push({ key: k, entropy: Infinity });
+                    continue;
+                }
+
+                const textFrequencies = occ.map(x => x / totalOcc);
+                const entropy = crossEntropy(textFrequencies, frequencies);
+                scores.push({ key: k, entropy: entropy });
+            }
+
+            scores.sort((a, b) => a.entropy - b.entropy);
+            return { bestKey: scores[0].key, scores: scores };
+        }
+
+        function displayScores(scores) {
+            scoresGrid.innerHTML = '';
+            scores.forEach((score, index) => {
+                const item = document.createElement('div');
+                item.className = 'score-item';
+                if (index === 0) item.classList.add('best');
+                if (score.key === currentKey) item.classList.add('selected');
+                
+                item.innerHTML = `
+                    <span class="score-key">Key ${score.key}</span>
+                    <span class="score-value">${score.entropy.toFixed(3)}</span>
+                `;
+                
+                item.addEventListener('click', () => {
+                    currentKey = score.key;
+                    keyValue.textContent = currentKey;
+                    keySlider.value = currentKey;
+                    updateOutput();
+                    
+                    document.querySelectorAll('.score-item').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    item.classList.add('selected');
+                });
+                
+                scoresGrid.appendChild(item);
+            });
+        }
+
+        function updateOutput() {
+            const text = inputText.value;
+            
+            if (!text) {
+                outputText.value = '';
+                return;
+            }
+
+            outputText.value = encode(text, currentKey);
+        }
+
+        function autoSolve() {
+            const text = inputText.value;
+            
+            if (!text || text.length < 5) {
+                alert('Please enter at least 5 characters to auto-solve.');
+                return;
+            }
+
+            const result = findBestKey(text, currentLanguage);
+            allScores = result.scores;
+            currentKey = result.bestKey;
+            keyValue.textContent = currentKey;
+            keySlider.value = currentKey;
+            
+            const originalKey = (26 - currentKey) % 26;
+            infoBox.innerHTML = `<strong>Best key found:</strong> ${currentKey} (text was likely encrypted with key ${originalKey}). Click on any score to try different keys.`;
+            
+            scoresContainer.style.display = 'block';
+            displayScores(result.scores);
+            updateOutput();
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            
+            modeButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+
+            if (mode === 'encrypt') {
+                inputLabel.textContent = 'Original text';
+                outputLabel.textContent = 'Encrypted text';
+                infoBox.innerHTML = '<strong>Encrypt Mode:</strong> Move the slider to choose the encryption key (0-25).';
+                scoresContainer.style.display = 'none';
+                decryptControls.style.display = 'none';
+            } else if (mode === 'decrypt') {
+                inputLabel.textContent = 'Encrypted text';
+                outputLabel.textContent = 'Decrypted text';
+                infoBox.innerHTML = '<strong>Decrypt Mode:</strong> Manually adjust the key or click "Auto-solve" to find the best key automatically.';
+                decryptControls.style.display = 'flex';
+            }
+
+            updateOutput();
+        }
+
+        async function copyToClipboard(text, button) {
+            try {
+                await navigator.clipboard.writeText(text);
+                const originalHTML = button.innerHTML;
+                button.innerHTML = '<span>✓</span> Copied!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalHTML;
+                    button.classList.remove('copied');
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+
+        inputText.addEventListener('input', updateOutput);
+
+        keySlider.addEventListener('input', (e) => {
+            currentKey = parseInt(e.target.value);
+            keyValue.textContent = currentKey;
+            updateOutput();
+            
+            if (scoresContainer.style.display === 'block') {
+                document.querySelectorAll('.score-item').forEach(el => {
+                    el.classList.remove('selected');
+                    if (parseInt(el.querySelector('.score-key').textContent.split(' ')[1]) === currentKey) {
+                        el.classList.add('selected');
+                    }
+                });
+            }
+        });
+
+        modeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setMode(btn.dataset.mode);
+            });
+        });
+
+        copyInputBtn.addEventListener('click', () => {
+            copyToClipboard(inputText.value, copyInputBtn);
+        });
+
+        copyOutputBtn.addEventListener('click', () => {
+            copyToClipboard(outputText.value, copyOutputBtn);
+        });
+
+        solveBtn.addEventListener('click', autoSolve);
+
+        languageSelect.addEventListener('change', (e) => {
+            currentLanguage = e.target.value;
+            if (scoresContainer.style.display === 'block') {
+                autoSolve();
+            }
+        });
+
+        setMode('decrypt');
+    </script>
+</body>
+</html>
